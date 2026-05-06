@@ -78,7 +78,6 @@ Only `chrome-devtools` is bundled in `.mcp.json` (required by the `web-performan
 | `sequential-thinking` | `wake-performance-engineer`, `wake-security-auditor` (structured reasoning) | `npx -y @modelcontextprotocol/server-sequential-thinking` |
 | `github` | repo / issue / PR lookups | `npx -y @modelcontextprotocol/server-github` — requires `GITHUB_PERSONAL_ACCESS_TOKEN` |
 | `@playwright/mcp` | E2E browser automation, QA flows | `npx -y @playwright/mcp` *(use the official scoped package — not the unscoped `playwright-mcp`)* |
-| `shadcn` | UI component generation | `npx shadcn@latest mcp` |
 | `TestSprite` | Test scaffolding | `npx -y testsprite-mcp` |
 
 ---
