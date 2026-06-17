@@ -92,10 +92,6 @@ If no MCP client is connected, the same lifecycle is available over the Cortex R
 
 A new workflow lands as `Draft`. It only serves traffic after you activate it. When iterating, bump `version` rather than mutating an activated definition.
 
-## Worked example
-
-`assets/example.json` is a complete, validated multi-branch workflow: an LLM extracts intent from a shipping question, a `branch` routes by completeness then by type, three `http` steps call different quote APIs, and a final `llm` formats the answer. The `saida` step shows the **funnel pattern** — concatenating several mutually-exclusive upstream outputs into one `final` string, where the non-taken paths resolve to empty. Study it when building anything with branches.
-
 ## Common mistakes to avoid
 
 - Forgetting `model` on an `llm` step (schema passes, runtime throws).
