@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cortex Workflow Definition v2",
+  "type": "object",
+  "required": ["name", "version", "start", "steps"],
+  "additionalProperties": true,
+  "properties": {
+    "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "version": { "type": "string", "minLength": 1, "maxLength": 50 },
+    "description": { "type": "string" },
+    "inputSchema": { "type": "object" },
+    "allowedFunctions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "version"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "version": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "allowedSecrets": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "start": { "type": "string", "minLength": 1 },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/step" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    }
+  },
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["id", "type"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": {
+          "type": "string",
+          "enum": ["constant", "passthrough", "branch", "http", "llm", "function", "result"]
+        },
+        "config": { "type": "object" },
+        "output": { "type": "string", "enum": ["final"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "http" } } },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                  "url": { "type": "string" },
+                  "method": { "type": "string" },
+                  "headers": { "type": "object" },
+                  "body": {},
+                  "queryParams": { "type": "object" },
+                  "timeoutSeconds": { "type": "integer", "minimum": 1 }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "llm" } } },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["userPrompt"],
+                "properties": {
+                  "systemPrompt": { "type": "string" },
+                  "userPrompt": { "type": "string" },
+                  "model": { "type": "string" },
+                  "responseFormat": { "type": "string", "enum": ["text", "json"] },
+                  "outputSchema": { "type": "object" },
+                  "useConversationContext": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "result" } } },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["userPrompt", "model"],
+                "properties": {
+                  "systemPrompt": { "type": "string" },
+                  "userPrompt": { "type": "string" },
+                  "model": { "type": "string" },
+                  "useConversationContext": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "function" } } },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["function", "version"],
+                "properties": {
+                  "function": { "type": "string", "minLength": 1 },
+                  "version": { "type": "string", "minLength": 1 },
+                  "payload": {}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "branch" } } },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["on", "cases"],
+                "properties": {
+                  "on": { "type": "string" },
+                  "cases": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string" }
+                  },
+                  "default": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "constant" } } },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["value"],
+                "properties": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "passthrough" } } },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["transform"],
+                "properties": {
+                  "transform": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "edge": {
+      "type": "object",
+      "required": ["from", "to"],
+      "additionalProperties": false,
+      "properties": {
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "condition": { "type": "string" }
+      }
+    }
+  }
+}

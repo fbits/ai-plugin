@@ -1,0 +1,23 @@
+{
+  "skill_name": "cortex-workflow-builder",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a Cortex workflow named 'TriagemSuporte' v1.0. Input is { mensagem: string }. Use an LLM step (model Standard, JSON output) to classify the message into a 'categoria' of Financeiro, Tecnico or Outro. Then branch on the category: Financeiro and Tecnico each call GET https://api.suporte.fbits.net/filas/{categoria} to get the queue, and Outro returns a fixed message asking the user to rephrase. Finally an LLM step formats a friendly reply. Give me the full workflow JSON.",
+      "expected_output": "Valid v2 workflow JSON: llm classify step with model+userPrompt+json outputSchema, branch with 3 cases + matching branch edges, two http steps, one constant for Outro, a final formatting llm + funnel, exactly one output:final, all edges reference real steps. Passes validate_workflow.py.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have this Cortex workflow but it won't register — the API returns a validation error. Can you find and fix what's wrong? {\"name\":\"EcoPing\",\"version\":\"1.0\",\"start\":\"ask\",\"steps\":[{\"id\":\"ask\",\"type\":\"llm\",\"config\":{\"provider\":\"cortex\",\"systemPrompt\":\"Reply politely.\",\"userPrompt\":\"{{input.q}}\"}},{\"id\":\"done\",\"type\":\"passthrough\",\"config\":{\"transform\":\"identity\",\"value\":\"{{steps.ask.text}}\"}}],\"edges\":[{\"from\":\"ask\",\"to\":\"done\"}]}",
+      "expected_output": "Identifies the two real problems: (1) no step has output:\"final\" — should be on 'done'; (2) the llm step is missing the required 'model' field (and 'provider' is ignored/should be dropped). Returns corrected JSON that passes validate_workflow.py.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "How do edges and branching work in a Cortex workflow? I have a branch step called 'route' with cases {\"a\":\"step_a\",\"b\":\"step_b\"} but only step_a ever runs. What am I missing?",
+      "expected_output": "Explains that each branch case needs a matching edge with condition 'branch:<case>' from the branch to the case's target step; the missing 'branch:b' edge is why step_b never runs. Mentions edge condition forms (success/error/branch:<case>).",
+      "files": []
+    }
+  ]
+}
